@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="frontend/frontend.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="PortfolioSiteCreator.AppHost/PortfolioSiteCreator.AppHost.csproj" />
+  <Project Path="PortfolioSiteCreator.Server/PortfolioSiteCreator.Server.csproj" />
+</Solution>
