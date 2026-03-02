@@ -18,6 +18,7 @@ type Props = {
     showPreview?: boolean;
     className?: string;
     style?: React.CSSProperties;
+    onUploadComplete?: (response: { fileName: string; url: string }) => void;
 };
 
 function formatBytes(bytes: number) {
@@ -37,6 +38,7 @@ export default function FileUpload({
     showPreview = true,
     className,
     style,
+    onUploadComplete
 }: Props) {
     const [entries, setEntries] = useState<FileEntry[]>([]);
     const [isDragging, setIsDragging] = useState(false);
@@ -119,6 +121,8 @@ export default function FileUpload({
         xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
                 setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, progress: 100, status: "done" } : e)));
+                const response = JSON.parse(xhr.responseText);
+                onUploadComplete?.(response);
             } else {
                 setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, status: "error", errorMessage: `Upload failed: ${xhr.status}` } : e)));
             }

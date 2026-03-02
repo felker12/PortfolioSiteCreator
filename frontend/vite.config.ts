@@ -4,14 +4,18 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    proxy: {
-      // Proxy API calls to the app service
-      '/api': {
-        target: process.env.SERVER_HTTPS || process.env.SERVER_HTTP,
-        changeOrigin: true,
-        secure: false
-      }
+    server: {
+        proxy: {
+            '/api': {
+                target: 'https://localhost:7363',
+                changeOrigin: true,
+                secure: false
+            },
+            '/uploads': {
+                target: 'https://localhost:7363',
+                changeOrigin: true,
+                secure: false
+            }
+        }
     }
-  }
 })

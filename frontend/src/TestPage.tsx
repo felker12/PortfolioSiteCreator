@@ -1,9 +1,12 @@
 <script src="http://localhost:8097"></script>
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom';
 import './App.css'
 import FileUpload from './FileUpload';
 
 function TestPage() {
+    const navigate = useNavigate();
+
     return (
         <div className="app-container">
             <main className="main-content">
@@ -15,6 +18,7 @@ function TestPage() {
                                 multiple={false}
                                 maxSizeMB={10}
                                 showPreview={true}
+                                onUploadComplete={(response) => navigate('/testing', { state: { fileUrl: response.url } })}
                             />
                         </div>
                     </div>
