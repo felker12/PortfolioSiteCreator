@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Http.Features;
+using PortfolioSiteCreator.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,8 +51,7 @@ api.MapGet("weatherforecast", () =>
 .CacheOutput(p => p.Expire(TimeSpan.FromSeconds(5)))
 .WithName("GetWeatherForecast");
 
-// Endpoint for file uploads
-api.MapPost("upload", async (HttpRequest request, IWebHostEnvironment env) =>
+api.MapPost("process-doc", async (HttpRequest request) =>
 {
     if (!request.HasFormContentType)
         return Results.BadRequest("Expected multipart/form-data");
@@ -62,21 +62,12 @@ api.MapPost("upload", async (HttpRequest request, IWebHostEnvironment env) =>
     if (file is null || file.Length == 0)
         return Results.BadRequest("No file provided");
 
-    // Save to wwwroot/uploads (or wherever you prefer)
-    var webRootPath = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
-    var uploadsPath = Path.Combine(webRootPath, "uploads");
-    Directory.CreateDirectory(uploadsPath);
+    var text = WordHandler.ProcessWordDocument(file.OpenReadStream());
 
-    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-    var filePath = Path.Combine(uploadsPath, fileName);
-
-    await using var stream = File.Create(filePath);
-    await file.CopyToAsync(stream);
-
-    return Results.Ok(new { fileName, url = $"/uploads/{fileName}" });
+    return Results.Ok(new { text });
 })
-.WithName("UploadFile")
-.DisableAntiforgery(); // Required for minimal API file uploads
+.WithName("ProcessDoc")
+.DisableAntiforgery();
 
 app.MapDefaultEndpoints();
 

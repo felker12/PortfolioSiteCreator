@@ -10,7 +10,7 @@ type FileEntry = {
 };
 
 type Props = {
-    uploadUrl?: string;
+    onSubmit?: (files: File[]) => void;
     multiple?: boolean;
     accept?: string;
     maxSizeMB?: number;
@@ -18,7 +18,6 @@ type Props = {
     showPreview?: boolean;
     className?: string;
     style?: React.CSSProperties;
-    onUploadComplete?: (response: { fileName: string; url: string }) => void;
 };
 
 function formatBytes(bytes: number) {
@@ -30,7 +29,7 @@ function formatBytes(bytes: number) {
 }
 
 export default function FileUpload({
-    uploadUrl,
+    onSubmit,
     multiple = true,
     accept,
     maxSizeMB = 10,
@@ -38,7 +37,6 @@ export default function FileUpload({
     showPreview = true,
     className,
     style,
-    onUploadComplete
 }: Props) {
     const [entries, setEntries] = useState<FileEntry[]>([]);
     const [isDragging, setIsDragging] = useState(false);
@@ -103,38 +101,6 @@ export default function FileUpload({
                 return next;
             });
         }
-    }
-
-    function uploadEntry(entry: FileEntry) {
-        setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, status: "uploading", progress: 0 } : e)));
-
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", uploadUrl || "", true);
-
-        xhr.upload.onprogress = function (ev) {
-            if (ev.lengthComputable) {
-                const percent = Math.round((ev.loaded / ev.total) * 100);
-                setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, progress: percent } : e)));
-            }
-        };
-
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, progress: 100, status: "done" } : e)));
-                const response = JSON.parse(xhr.responseText);
-                onUploadComplete?.(response);
-            } else {
-                setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, status: "error", errorMessage: `Upload failed: ${xhr.status}` } : e)));
-            }
-        };
-
-        xhr.onerror = function () {
-            setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, status: "error", errorMessage: "Network error" } : e)));
-        };
-
-        const form = new FormData();
-        form.append("file", entry.file, entry.file.name);
-        xhr.send(form);
     }
 
     function removeEntry(id: string) {
@@ -278,24 +244,21 @@ export default function FileUpload({
                     ))}
 
                     <button
-                        onClick={() => {
-                            const readyFiles = entries.filter((e) => e.status === "ready");
-                            readyFiles.forEach((e) => uploadEntry(e));
-                        }}
-                        disabled={entries.every((e) => e.status !== "ready")}
+                        onClick={() => onSubmit?.(entries.map(e => e.file))}
+                        disabled={entries.length === 0}
                         style={{
-                            background: entries.some((e) => e.status === "ready") ? "#22c55e" : "#a3a3a3",
+                            background: entries.length > 0 ? "#22c55e" : "#a3a3a3",
                             color: "white",
                             border: "none",
                             padding: "8px 16px",
                             borderRadius: 6,
-                            cursor: entries.some((e) => e.status === "ready") ? "pointer" : "not-allowed",
+                            cursor: entries.length > 0 ? "pointer" : "not-allowed",
                             fontSize: 14,
                             fontWeight: 600,
                             marginTop: 4,
                         }}
                     >
-                        Upload File{entries.filter((e) => e.status === "ready").length > 1 ? "s" : ""}
+                        Process File{entries.length > 1 ? "s" : ""}
                     </button>
                 </div>
             )}

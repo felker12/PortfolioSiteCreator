@@ -6,44 +6,27 @@ import FileUpload from './FileUpload';
 
 function TestPage() {
     const navigate = useNavigate();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     return (
         <div className="app-container">
             <main className="main-content">
                 <section className="weather-section" aria-labelledby="weather-heading">
-                    <div className="card">
+                    <div className="card" style={{ maxWidth: 800, margin: '0 auto' }}>
                         <div className="section-header">
                             <FileUpload
-                                uploadUrl="/api/upload"
+                                accept=".docx"
                                 multiple={false}
                                 maxSizeMB={10}
-                                showPreview={true}
-                                onUploadComplete={(response) => navigate('/testing', { state: { fileUrl: response.url } })}
+                                showPreview={false}
+                                onSubmit={(files) => navigate('/testing', { state: { file: files[0] } })}
                             />
                         </div>
                     </div>
                 </section>
             </main>
-
-            <footer className="app-footer">
-                <nav aria-label="Footer navigation">
-                    <a href="https://aspire.dev" target="_blank" rel="noopener noreferrer">
-                        Learn more about Aspire<span className="visually-hidden"> (opens in new tab)</span>
-                    </a>
-                    <a
-                        href="https://github.com/dotnet/aspire"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="github-link"
-                        aria-label="View Aspire on GitHub (opens in new tab)"
-                    >
-                        <img src="/github.svg" alt="" width="24" height="24" aria-hidden="true" />
-                        <span className="visually-hidden">GitHub</span>
-                    </a>
-                </nav>
-            </footer>
         </div>
-    )
+    );
 }
 
 export default TestPage
