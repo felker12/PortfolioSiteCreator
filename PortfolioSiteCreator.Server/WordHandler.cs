@@ -1,8 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 namespace PortfolioSiteCreator.Server
 {

@@ -63,7 +63,7 @@ function App() {
         </a>
         <h1 className="app-title">Aspire Starter</h1>
         <p className="app-subtitle">Modern distributed application development</p>
-        <Link to="/test-page">Test Page</Link>
+        <Link to="/file-selection">File Selection Page</Link>
       </header>
 
       <main className="main-content">
