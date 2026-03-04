@@ -61,7 +61,6 @@ namespace PortfolioSiteCreator.Server
                     var styleId = para.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
                     Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
                 }
-
             }
 
             foreach (var paragraph in mainPart.Document.Body.Elements<Paragraph>())

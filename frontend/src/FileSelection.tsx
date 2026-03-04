@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './App.css'
 import FileUpload from './FileUpload';
 
@@ -31,16 +32,17 @@ function TestPage() {
         }
     };
 
-    const handleNavigate = () => {
-        // TODO: Replace with your navigation logic, e.g. navigate('/next-page')
-        console.log("Navigating to next page...");
+    const navigate = useNavigate();
+
+    const handleNavigate = (files: File[]) => {
+        navigate('/site-creator', { state: { file: files[0] } });
     };
 
     return (
         <div className="app-container">
             <main className="main-content">
                 <section className="weather-section" aria-labelledby="weather-heading">
-                    <div className="card" style={{ maxWidth: 800, margin: '0 auto' }}>
+                    <div className="card" style={{ maxWidth: 1000, margin: '0 auto' }}>
                         <div className="section-header">
                             <FileUpload
                                 accept=".docx"
