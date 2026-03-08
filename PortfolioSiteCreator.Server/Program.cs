@@ -69,6 +69,26 @@ api.MapPost("process-doc", async (HttpRequest request) =>
 .WithName("ProcessDoc")
 .DisableAntiforgery();
 
+api.MapPost("organize-doc", async (HttpRequest request) =>
+{
+    if (!request.HasFormContentType)
+        return Results.BadRequest("Expected multipart/form-data");
+
+    var form = await request.ReadFormAsync();
+    var file = form.Files.GetFile("file");
+
+    if (file is null || file.Length == 0)
+        return Results.BadRequest("No file provided");
+
+    //var text = WordHandler.OrganizeWordDocument(file.OpenReadStream());
+    WordHandler.OrganizeWordDocument(file.OpenReadStream());
+
+    //return Results.Ok(new { text });
+    return Results.Ok();
+})
+.WithName("OrganizeDoc")
+.DisableAntiforgery();
+
 app.MapDefaultEndpoints();
 
 app.UseFileServer();

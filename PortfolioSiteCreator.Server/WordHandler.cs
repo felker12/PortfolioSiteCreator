@@ -4,26 +4,33 @@ using System.Diagnostics;
 
 namespace PortfolioSiteCreator.Server
 {
+    public struct ParagraphInfo
+    {
+        public string Text { get; set; } = string.Empty;
+        public string? StyleId { get; set; } = string.Empty;
+
+        public ParagraphInfo(string text, string? styleId)
+        {
+            Text = text;
+            StyleId = styleId;
+        }
+    }
+
+    public struct PageInfo 
+    {
+        ParagraphInfo Header { get; set; }\
+        List<ParagraphInfo>? Paragraphs { get; set; }
+
+        public PageInfo(ParagraphInfo header, List<ParagraphInfo>? paragraphs)
+        {
+            Header = header;
+            Paragraphs = paragraphs;
+        }
+    }
+
     public static class WordHandler
     {
-        public static string ReadWordDocument(string filePath)
-        {
-            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
-            using WordprocessingDocument wordDocument = WordprocessingDocument.Open(fs, false); // false for read-only
-                                                                                                // Get the main document part
-            MainDocumentPart? mainPart = wordDocument.MainDocumentPart;
-
-            if (mainPart == null || mainPart.Document == null || mainPart.Document.Body == null)
-            {
-                return string.Empty;
-            }
-
-            // Extract text from paragraphs
-            var paragraphs = mainPart.Document.Body.Elements<Paragraph>();
-            return string.Join(Environment.NewLine, paragraphs.Select(p => p.InnerText));
-        }
-
-        public static string ReadWordDocument(Stream stream)
+        public static IEnumerable<Paragraph>? GetParagraphs(Stream stream)
         {
             using WordprocessingDocument wordDocument = WordprocessingDocument.Open(stream, false);
 
@@ -31,45 +38,52 @@ namespace PortfolioSiteCreator.Server
 
             if (mainPart == null || mainPart.Document == null || mainPart.Document.Body == null)
             {
-                return string.Empty;
+                return null;
             }
 
             // Extract text from paragraphs
-            var paragraphs = mainPart.Document.Body.Elements<Paragraph>();
+            return mainPart.Document.Body.Elements<Paragraph>();
+        }
+
+        public static string ReadWordDocument(string filePath)
+        {
+            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
+            
+            return ReadWordDocument(fs);
+        }
+
+        public static string ReadWordDocument(Stream stream)
+        {
+            // Extract text from paragraphs
+            var paragraphs = GetParagraphs(stream);
+
+            if(paragraphs is null)
+                return string.Empty;
+
             return string.Join(Environment.NewLine, paragraphs.Select(p => p.InnerText));
         }
 
         public static string ProcessWordDocument(Stream stream)
         {
-            using WordprocessingDocument wordDocument = WordprocessingDocument.Open(stream, false);
-
-            MainDocumentPart? mainPart = wordDocument.MainDocumentPart;
-
-            if (mainPart == null || mainPart.Document == null || mainPart.Document.Body == null)
-            {
-                return string.Empty;
-            }
-
             // Extract text from paragraphs
             string output = string.Empty;
+            var paragraphs = GetParagraphs(stream);
 
-            //for testing
-            foreach (var element in mainPart.Document.Body.Elements())
-            {
-                if(element is Paragraph para)
-                {
-                    var styleId = para.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                    Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
-                }
-            }
+            if (paragraphs is null)
+                return output;
 
-            foreach (var paragraph in mainPart.Document.Body.Elements<Paragraph>())
+            foreach (var paragraph in paragraphs)
             {
                 output += paragraph.InnerText + Environment.NewLine;
 
                 //add an extra blank line if it's a regular paragraph
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                if(styleId is not null && styleId.Equals("Normal"))
+
+                // For debugging: print the style ID of each paragraph
+                Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
+
+                // If the style is "Normal", add an extra blank line
+                if (styleId is not null && styleId.Equals("Normal"))
                 {
                     output += Environment.NewLine;
                 }
@@ -77,5 +91,36 @@ namespace PortfolioSiteCreator.Server
 
             return output;
         }
+
+        public static void OrganizeWordDocument(Stream stream)
+        {
+            var paragraphs = GetParagraphs(stream);
+
+            if (paragraphs is null)
+                return;
+
+            //TODO
+            Debug.WriteLine("OrganizeWordDocument called");
+
+            //extract text from paragraphs
+            //organize text into ParagraphInfo based on headings
+            //create PageInfo objects based on the organized ParagraphInfo
+            //for example, if a heading is "About Me", then all subsequent paragraphs until the next heading would be grouped under that heading in a PageInfo object
+            //return the organized PageInfo objects
+
+
+        }
+
+
+        public static ParagraphInfo GetPageInfo(Paragraph paragraph)
+        {
+            string text = paragraph.InnerText;
+            string ?styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+
+            return new(text, styleId);
+        }
+
+
+
     }
 }
