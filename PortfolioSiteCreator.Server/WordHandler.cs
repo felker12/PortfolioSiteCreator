@@ -4,30 +4,6 @@ using System.Diagnostics;
 
 namespace PortfolioSiteCreator.Server
 {
-    public struct ParagraphInfo
-    {
-        public string Text { get; set; } = string.Empty;
-        public string? StyleId { get; set; } = string.Empty;
-
-        public ParagraphInfo(string text, string? styleId)
-        {
-            Text = text;
-            StyleId = styleId;
-        }
-    }
-
-    public struct PageInfo 
-    {
-        ParagraphInfo Header { get; set; }\
-        List<ParagraphInfo>? Paragraphs { get; set; }
-
-        public PageInfo(ParagraphInfo header, List<ParagraphInfo>? paragraphs)
-        {
-            Header = header;
-            Paragraphs = paragraphs;
-        }
-    }
-
     public static class WordHandler
     {
         public static IEnumerable<Paragraph>? GetParagraphs(Stream stream)
@@ -48,7 +24,6 @@ namespace PortfolioSiteCreator.Server
         public static string ReadWordDocument(string filePath)
         {
             using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
-            
             return ReadWordDocument(fs);
         }
 
@@ -79,7 +54,7 @@ namespace PortfolioSiteCreator.Server
                 //add an extra blank line if it's a regular paragraph
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
-                // For debugging: print the style ID of each paragraph
+                //TODO: For debugging: print the style ID of each paragraph
                 Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
 
                 // If the style is "Normal", add an extra blank line
@@ -99,20 +74,20 @@ namespace PortfolioSiteCreator.Server
             if (paragraphs is null)
                 return;
 
+            List<PageInfo> pages = OrganizeParagraphsIntoPages(paragraphs);
+
             //TODO
-            Debug.WriteLine("OrganizeWordDocument called");
-
-            //extract text from paragraphs
-            //organize text into ParagraphInfo based on headings
-            //create PageInfo objects based on the organized ParagraphInfo
-            //for example, if a heading is "About Me", then all subsequent paragraphs until the next heading would be grouped under that heading in a PageInfo object
-            //return the organized PageInfo objects
-
+            int count = 1;
+            foreach (var page in pages)
+            {
+                Debug.WriteLine($"Page {count}: {page}");
+                count++;
+            }
 
         }
 
-
-        public static ParagraphInfo GetPageInfo(Paragraph paragraph)
+        //helper method to extract text and style information from a paragraph and return it as a ParagraphInfo object
+        private static ParagraphInfo GetPageInfo(Paragraph paragraph)
         {
             string text = paragraph.InnerText;
             string ?styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
@@ -120,7 +95,44 @@ namespace PortfolioSiteCreator.Server
             return new(text, styleId);
         }
 
+        //extract text from paragraphs
+        //organize text into ParagraphInfo based on headings
+        //create PageInfo objects based on the organized ParagraphInfo
+        //for example, if a heading is "About Me", then all subsequent paragraphs until the next heading would be grouped under that heading in a PageInfo object
+        //return the organized PageInfo objects
+        private static List<PageInfo> OrganizeParagraphsIntoPages(IEnumerable<Paragraph> paragraphs)
+        {
+            List<PageInfo> pages = [];
+            PageInfo page = new(); 
+            ParagraphInfo paragraphInfo;
+            bool previousStyleIsHeading = false;
 
 
+            foreach (var paragraph in paragraphs)
+            {
+                if (previousStyleIsHeading is true)
+                {
+                    pages.Add(page);
+                    previousStyleIsHeading = false;
+                }
+
+                paragraphInfo = GetPageInfo(paragraph);
+
+                if (paragraphInfo.StyleId is not null && paragraphInfo.StyleId.Contains("Heading"))
+                {
+                    previousStyleIsHeading = true;
+
+                    //create a new page with the header
+                    page = new PageInfo(paragraphInfo, []);
+                }
+                else
+                {
+                    //add the paragraph to the current page's paragraphs
+                    page.Paragraphs.Add(paragraphInfo);
+                }
+            }
+
+            return pages;
+        }
     }
 }
