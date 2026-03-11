@@ -25,9 +25,7 @@ export default function SiteCreator() {
         }
     };
 
-    useEffect(() => {
-        handleOrganizeFile(file)
-    }, [])
+    handleOrganizeFile(file);
 
     return (
         <div className="app-container">

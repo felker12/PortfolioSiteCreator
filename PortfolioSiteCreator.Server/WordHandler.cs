@@ -1,6 +1,8 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Html;
 using System.Diagnostics;
+using System.Text;
 
 namespace PortfolioSiteCreator.Server
 {
@@ -55,7 +57,7 @@ namespace PortfolioSiteCreator.Server
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
                 //TODO: For debugging: print the style ID of each paragraph
-                Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
+                //Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
 
                 // If the style is "Normal", add an extra blank line
                 if (styleId is not null && styleId.Equals("Normal"))
@@ -67,23 +69,59 @@ namespace PortfolioSiteCreator.Server
             return output;
         }
 
+        //Testing method to organize the paragraphs into pages based on headings and print the results to the console
         public static void OrganizeWordDocument(Stream stream)
+        {
+            var pages = GetPageInfo(stream);
+            PageCreator creator = new(pages);
+            string directory = Environment.CurrentDirectory;
+            string savePath = @"wwwroot\CreatedSites\";
+            string folderpath = Path.Combine(directory, savePath);
+
+            //if we are calling this method from the test location use the test save path, otherwise use the server save path
+            if (directory.Contains("PortfolioSiteCreator.Server") is false)
+            {
+                savePath = @"Output";
+                // Navigate up 3 levels from bin\Debug\net10.0, then into the target path
+                folderpath = Path.GetFullPath(Path.Combine(directory, @"..\..\..\", savePath));
+                Debug.WriteLine("Folder path:" + folderpath);
+            }
+
+            string uniqueFolderName = $"Site_{Guid.NewGuid().ToString("N")[..10]}"; // e.g. "Site_3f2504e0"
+            string fullPath = Path.Combine(folderpath, uniqueFolderName);
+
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+
+            string fileName;
+            foreach (var site in creator.Pages)
+            {
+                fileName = site.Key.Header.Text.Replace(" ", string.Empty) + ".html"; // e.g. "AboutMe.html"
+                //save the HTML string to a file in the created folder
+                string filePath = Path.Combine(fullPath, fileName);
+
+                //Write the content to the file
+                File.WriteAllText(filePath, site.Value, Encoding.UTF8);
+
+                //Debug.WriteLine($"{fileName} {filePath}");
+                //Debug.WriteLine("site key:" + site.Key.Header.Text.ToString());
+            }
+
+            Debug.WriteLine(uniqueFolderName);
+            Console.WriteLine("folder name: " + uniqueFolderName + "\n");
+        }
+
+        //main method to extract text and style information from a Word document and organize it into PageInfo objects based on headings
+        public static List<PageInfo> GetPageInfo(Stream stream)
         {
             var paragraphs = GetParagraphs(stream);
 
             if (paragraphs is null)
-                return;
+                return [];
 
-            List<PageInfo> pages = OrganizeParagraphsIntoPages(paragraphs);
-
-            //TODO
-            int count = 1;
-            foreach (var page in pages)
-            {
-                Debug.WriteLine($"Page {count}: {page}");
-                count++;
-            }
-
+            return OrganizeParagraphsIntoPages(paragraphs);
         }
 
         //helper method to extract text and style information from a paragraph and return it as a ParagraphInfo object

@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\CreatedSites\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 </Project>
