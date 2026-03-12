@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import './App.css'
 import FileUpload from './FileUpload';
 
-function TestPage() {
+function FileSelection() {
     const [docText, setDocText] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [fileSelected, setFileSelected] = useState(false);
 
     const handleProcessFile = async (files: File[]) => {
         const file = files[0];
@@ -40,8 +41,33 @@ function TestPage() {
 
     return (
         <div className="app-container">
+            <header className="app-header">
+                <h1 className="app-title">Upload Your Document</h1>
+                <p className="app-subtitle">Turn your Word document into a website in just a few seconds.</p>
+            </header>
+
             <main className="main-content">
-                <section className="weather-section" aria-labelledby="weather-heading">
+                <section className="about-section">
+
+                    {/* Instructions — only show before a file is selected */}
+                    {!fileSelected && (
+                        <div className="card" style={{ marginBottom: 24 }}>
+                            <h2 style={{ marginBottom: 12 }}>Before you upload</h2>
+                            <p style={{ color: '#555', marginBottom: 16 }}>
+                                To get the best results, structure your Word document using the built-in heading styles.
+                                Each heading will become its own page on your generated website.
+                            </p>
+                            <ol style={{ paddingLeft: 20, lineHeight: 2, color: '#444' }}>
+                                <li>Open your Word document</li>
+                                <li>Apply <strong>Any Heading</strong> style to each section title</li>
+                                <li>Write your content as normal paragraphs beneath each heading</li>
+                                <li>Save the file as <strong>.docx</strong></li>
+                                <li>Upload it below and click <strong>Process Document</strong></li>
+                            </ol>
+                        </div>
+                    )}
+
+                    {/* File Upload */}
                     <div className="card" style={{ maxWidth: 1000, margin: '0 auto' }}>
                         <div className="section-header">
                             <FileUpload
@@ -49,15 +75,15 @@ function TestPage() {
                                 multiple={false}
                                 maxSizeMB={10}
                                 showPreview={false}
-                                // Auto-process when a file is selected
                                 onFilesSelected={(files) => {
                                     if (files.length > 0) {
+                                        setFileSelected(true);
                                         handleProcessFile(files);
                                     } else {
+                                        setFileSelected(false);
                                         setDocText(null);
                                     }
                                 }}
-                                // Process button now navigates to another page
                                 onSubmit={handleNavigate}
                             />
                         </div>
@@ -100,4 +126,4 @@ function TestPage() {
     );
 }
 
-export default TestPage;
+export default FileSelection;

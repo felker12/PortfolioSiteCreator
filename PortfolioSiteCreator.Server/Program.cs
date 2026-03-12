@@ -1,4 +1,4 @@
-
+using System.IO.Compression;
 using Microsoft.AspNetCore.Http.Features;
 using PortfolioSiteCreator.Server;
 
@@ -80,14 +80,27 @@ api.MapPost("organize-doc", async (HttpRequest request) =>
     if (file is null || file.Length == 0)
         return Results.BadRequest("No file provided");
 
-    //var text = WordHandler.OrganizeWordDocument(file.OpenReadStream());
-    WordHandler.OrganizeWordDocument(file.OpenReadStream());
+    var folderPath = WordHandler.CreateWebsiteFromWordDocument(file.OpenReadStream());
 
-    //return Results.Ok(new { text });
-    return Results.Ok();
+    return Results.Ok(new { folderPath });
 })
 .WithName("OrganizeDoc")
 .DisableAntiforgery();
+
+api.MapGet("download-site/{folderName}", (string folderName, IWebHostEnvironment env) =>
+{
+    var folderPath = Path.Combine(env.ContentRootPath, "wwwroot", "CreatedSites", folderName);
+
+    if (!Directory.Exists(folderPath))
+        return Results.NotFound("Site folder not found");
+
+    var zipStream = new MemoryStream();
+    ZipFile.CreateFromDirectory(folderPath, zipStream);
+    zipStream.Position = 0;
+
+    return Results.File(zipStream, "application/zip", $"{folderName}.zip");
+})
+.WithName("DownloadSite");
 
 app.MapDefaultEndpoints();
 

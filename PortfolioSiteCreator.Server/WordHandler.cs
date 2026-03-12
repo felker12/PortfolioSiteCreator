@@ -69,8 +69,9 @@ namespace PortfolioSiteCreator.Server
             return output;
         }
 
-        //Testing method to organize the paragraphs into pages based on headings and print the results to the console
-        public static void OrganizeWordDocument(Stream stream)
+        //main method to create a website from a Word document
+        //returns the name of the folder where the website was created, which is a unique identifier based on a GUID
+        public static string CreateWebsiteFromWordDocument(Stream stream)
         {
             var pages = GetPageInfo(stream);
             PageCreator creator = new(pages);
@@ -84,7 +85,6 @@ namespace PortfolioSiteCreator.Server
                 savePath = @"Output";
                 // Navigate up 3 levels from bin\Debug\net10.0, then into the target path
                 folderpath = Path.GetFullPath(Path.Combine(directory, @"..\..\..\", savePath));
-                Debug.WriteLine("Folder path:" + folderpath);
             }
 
             string uniqueFolderName = $"Site_{Guid.NewGuid().ToString("N")[..10]}"; // e.g. "Site_3f2504e0"
@@ -95,6 +95,10 @@ namespace PortfolioSiteCreator.Server
                 Directory.CreateDirectory(fullPath);
             }
 
+
+            // Save stylesheet
+            File.WriteAllText(Path.Combine(fullPath, "styles.css"), PageCreator.GetStylesheet(), Encoding.UTF8);
+
             string fileName;
             foreach (var site in creator.Pages)
             {
@@ -104,13 +108,9 @@ namespace PortfolioSiteCreator.Server
 
                 //Write the content to the file
                 File.WriteAllText(filePath, site.Value, Encoding.UTF8);
-
-                //Debug.WriteLine($"{fileName} {filePath}");
-                //Debug.WriteLine("site key:" + site.Key.Header.Text.ToString());
             }
 
-            Debug.WriteLine(uniqueFolderName);
-            Console.WriteLine("folder name: " + uniqueFolderName + "\n");
+            return fullPath;
         }
 
         //main method to extract text and style information from a Word document and organize it into PageInfo objects based on headings
