@@ -71,43 +71,27 @@ namespace PortfolioSiteCreator.Server
 
         //main method to create a website from a Word document
         //returns the name of the folder where the website was created, which is a unique identifier based on a GUID
-        public static string CreateWebsiteFromWordDocument(Stream stream)
+        public static string CreateWebsiteFromWordDocument(Stream stream, string contentRootPath)
         {
             var pages = GetPageInfo(stream);
             PageCreator creator = new(pages);
-            string directory = Environment.CurrentDirectory;
-            string savePath = @"wwwroot\CreatedSites\";
-            string folderpath = Path.Combine(directory, savePath);
 
-            //if we are calling this method from the test location use the test save path, otherwise use the server save path
-            if (directory.Contains("PortfolioSiteCreator.Server") is false)
-            {
-                savePath = @"Output";
-                // Navigate up 3 levels from bin\Debug\net10.0, then into the target path
-                folderpath = Path.GetFullPath(Path.Combine(directory, @"..\..\..\", savePath));
-            }
+            string folderpath = Path.Combine(contentRootPath, "wwwroot", "CreatedSites");
+            Directory.CreateDirectory(folderpath);
 
-            string uniqueFolderName = $"Site_{Guid.NewGuid().ToString("N")[..10]}"; // e.g. "Site_3f2504e0"
+            string uniqueFolderName = $"Site_{Guid.NewGuid().ToString("N")[..10]}";
             string fullPath = Path.Combine(folderpath, uniqueFolderName);
+            Directory.CreateDirectory(fullPath);
 
-            if (!Directory.Exists(fullPath))
-            {
-                Directory.CreateDirectory(fullPath);
-            }
-
-
-            // Save stylesheet
             File.WriteAllText(Path.Combine(fullPath, "styles.css"), PageCreator.GetStylesheet(), Encoding.UTF8);
 
-            string fileName;
             foreach (var site in creator.Pages)
             {
-                fileName = site.Key.Header.Text.Replace(" ", string.Empty) + ".html"; // e.g. "AboutMe.html"
-                //save the HTML string to a file in the created folder
-                string filePath = Path.Combine(fullPath, fileName);
+                string fileName = site.Key.Header.Text == "Index"
+                    ? "index.html"
+                    : site.Key.Header.Text.Replace(" ", string.Empty) + ".html";
 
-                //Write the content to the file
-                File.WriteAllText(filePath, site.Value, Encoding.UTF8);
+                File.WriteAllText(Path.Combine(fullPath, fileName), site.Value, Encoding.UTF8);
             }
 
             return fullPath;

@@ -69,7 +69,7 @@ api.MapPost("process-doc", async (HttpRequest request) =>
 .WithName("ProcessDoc")
 .DisableAntiforgery();
 
-api.MapPost("organize-doc", async (HttpRequest request) =>
+api.MapPost("organize-doc", async (HttpRequest request, IWebHostEnvironment env) =>
 {
     if (!request.HasFormContentType)
         return Results.BadRequest("Expected multipart/form-data");
@@ -80,7 +80,7 @@ api.MapPost("organize-doc", async (HttpRequest request) =>
     if (file is null || file.Length == 0)
         return Results.BadRequest("No file provided");
 
-    var folderPath = WordHandler.CreateWebsiteFromWordDocument(file.OpenReadStream());
+    var folderPath = WordHandler.CreateWebsiteFromWordDocument(file.OpenReadStream(), env.ContentRootPath);
 
     return Results.Ok(new { folderPath });
 })
