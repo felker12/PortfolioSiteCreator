@@ -85,6 +85,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/felker12/your-repo-name.git
+```
 
 ### Backend Setup
 
@@ -92,6 +93,7 @@ git clone https://github.com/felker12/your-repo-name.git
 cd backend
 dotnet restore
 dotnet run
+```
 
 ### Frontend Setup
 
@@ -99,6 +101,7 @@ dotnet run
 cd frontend
 npm install
 npm start
+```
 
 ## 💡 Design Highlights
 - Designed backend services to parse and transform semi-structured `.docx` data into structured formats for dynamic rendering
