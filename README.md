@@ -24,6 +24,21 @@ The application parses semi-structured `.docx` files, extracts relevant informat
 
 ---
 
+## 🎯 Use Case
+
+This tool is designed for developers, students, and job seekers who want to quickly generate a personal portfolio site without manually building one from scratch.
+
+It reduces the time required to create a portfolio from hours to seconds by automating content extraction and layout generation.
+
+---
+
+
+## 🚀 Live Demo
+
+https://portfoliocreator-hwemcghrh5axesey.canadacentral-01.azurewebsites.net/
+
+---
+
 ## 🧠 Architecture Overview
 
 The application follows a client-server architecture with clear separation of concerns:
@@ -62,12 +77,6 @@ The system is designed to be modular and extensible, allowing support for additi
 - **Architecture:** REST APIs
 - **Cloud/DevOps:** Azure App Services, GitHub Actions
 - **Data Processing:** Document parsing and transformation
-
----
-
-## 🚀 Live Demo
-
-https://portfoliocreator-hwemcghrh5axesey.canadacentral-01.azurewebsites.net/
 
 ---
 
