@@ -85,3 +85,34 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/felker12/your-repo-name.git
+
+### Backend Setup
+
+```bash
+cd backend
+dotnet restore
+dotnet run
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm start
+
+## 💡 Design Highlights
+- Designed backend services to parse and transform semi-structured `.docx` data into structured formats for dynamic rendering
+- Implemented a data transformation pipeline (parse → normalize → render) to handle inconsistent resume formats
+- Separated concerns between UI, API, and processing layers to support scalability and future extensibility
+- Built the system to support future template-based rendering and export features
+
+
+## 🔮 Future Improvements
+Support for multiple portfolio templates and themes
+Export generated portfolios as static deployable sites
+Enhanced parsing for different resume formats
+User customization and editing tools
+
+📄 License
+
+This project is for educational and portfolio purposes.
