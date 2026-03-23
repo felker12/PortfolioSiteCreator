@@ -118,12 +118,16 @@ npm start
 - Separated concerns between UI, API, and processing layers to support scalability and future extensibility
 - Built the system to support future template-based rendering and export features
 
+---
 
 ## 🔮 Future Improvements
 Support for multiple portfolio templates and themes
 Export generated portfolios as static deployable sites
 Enhanced parsing for different resume formats
 User customization and editing tools
+
+---
+
 
 📄 License
 
