@@ -27,6 +27,13 @@ jobs:
         working-directory: frontend
         run: npm install
 
+      - name: Clean frontend dist
+        shell: powershell
+        run: |
+            if (Test-Path frontend/dist) {
+                Remove-Item -Recurse -Force frontend/dist
+            }
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build
