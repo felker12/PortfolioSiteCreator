@@ -56,9 +56,6 @@ namespace PortfolioSiteCreator.Server
                 //add an extra blank line if it's a regular paragraph
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
-                //TODO: For debugging: print the style ID of each paragraph
-                //Debug.WriteLine($"Style: {styleId}"); // e.g. "Heading1", "Normal"
-
                 // If the style is "Normal", add an extra blank line
                 if (styleId is not null && styleId.Equals("Normal"))
                 {
@@ -71,7 +68,7 @@ namespace PortfolioSiteCreator.Server
 
         //main method to create a website from a Word document
         //returns the name of the folder where the website was created, which is a unique identifier based on a GUID
-        public static string CreateWebsiteFromWordDocument(Stream stream, string contentRootPath)
+        public static string CreateWebsiteFromWordDocument(Stream stream, string contentRootPath, string theme)
         {
             var pages = GetPageInfo(stream);
             PageCreator creator = new(pages);
@@ -83,7 +80,9 @@ namespace PortfolioSiteCreator.Server
             string fullPath = Path.Combine(folderpath, uniqueFolderName);
             Directory.CreateDirectory(fullPath);
 
-            File.WriteAllText(Path.Combine(fullPath, "styles.css"), PageCreator.GetStylesheet(), Encoding.UTF8);
+            var parsedTheme = Enum.TryParse<StylesheetTheme>(theme, out var t) ? t : StylesheetTheme.Basic;
+            string stylesheetContent = PageCreator.GetStylesheet(parsedTheme);
+            File.WriteAllText(Path.Combine(fullPath, "styles.css"), stylesheetContent, Encoding.UTF8);
 
             foreach (var site in creator.Pages)
             {
@@ -95,6 +94,40 @@ namespace PortfolioSiteCreator.Server
             }
 
             return fullPath;
+        }
+
+        public static string GeneratePreviewPage(Stream stream, StylesheetTheme theme)
+        {
+            var pages = GetPageInfo(stream);
+            var firstPage = pages.FirstOrDefault();
+            var stylesheet = PageCreator.GetStylesheet(theme);
+
+            string body = string.Empty;
+            foreach (var paragraph in firstPage.Paragraphs)
+            {
+                body += $"        <p>{paragraph.Text}</p>\n";
+            }
+
+            return @$"<!DOCTYPE html>
+<html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Preview</title>
+        <style>{stylesheet}</style>
+    </head>
+    <body>
+        <nav>
+            <a href=""#"">Home</a>
+        </nav>
+        <main>
+            <h1>{firstPage.Header.Text}</h1>
+            <div class=""content"">
+{body}
+            </div>
+        </main>
+    </body>
+</html>";
         }
 
         //main method to extract text and style information from a Word document and organize it into PageInfo objects based on headings

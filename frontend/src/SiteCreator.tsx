@@ -7,12 +7,14 @@ export default function SiteCreator() {
     const file = location.state?.file as File;
     const [folderName, setFolderName] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
+    const theme = location.state?.theme as string ?? 'Basic';
 
     const handleOrganizeFile = async (file: File) => {
         if (!file || !file.name.endsWith('.docx')) return;
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('theme', theme);
 
         try {
             const response = await fetch('/api/organize-doc', {

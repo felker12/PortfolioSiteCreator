@@ -80,11 +80,32 @@ api.MapPost("organize-doc", async (HttpRequest request, IWebHostEnvironment env)
     if (file is null || file.Length == 0)
         return Results.BadRequest("No file provided");
 
-    var folderPath = WordHandler.CreateWebsiteFromWordDocument(file.OpenReadStream(), env.ContentRootPath);
+    var theme = form["theme"].ToString(); 
+    var folderPath = WordHandler.CreateWebsiteFromWordDocument(file.OpenReadStream(), env.ContentRootPath, theme);
 
     return Results.Ok(new { folderPath });
 })
 .WithName("OrganizeDoc")
+.DisableAntiforgery();
+
+api.MapPost("preview-doc", async (HttpRequest request) =>
+{
+    if (!request.HasFormContentType)
+        return Results.BadRequest("Expected multipart/form-data");
+
+    var form = await request.ReadFormAsync();
+    var file = form.Files.GetFile("file");
+    var theme = form["theme"].ToString();
+
+    if (file is null || file.Length == 0)
+        return Results.BadRequest("No file provided");
+
+    var parsedTheme = Enum.TryParse<StylesheetTheme>(theme, out var t) ? t : StylesheetTheme.Basic;
+    var html = WordHandler.GeneratePreviewPage(file.OpenReadStream(), parsedTheme);
+
+    return Results.Content(html, "text/html");
+})
+.WithName("PreviewDoc")
 .DisableAntiforgery();
 
 api.MapGet("download-site/{folderName}", (string folderName, IWebHostEnvironment env) =>

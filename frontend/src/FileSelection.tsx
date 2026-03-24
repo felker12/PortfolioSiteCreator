@@ -36,7 +36,7 @@ function FileSelection() {
     const navigate = useNavigate();
 
     const handleNavigate = (files: File[]) => {
-        navigate('/site-creator', { state: { file: files[0] } });
+        navigate('/theme-selection', { state: { file: files[0] } });
     };
 
     return (
