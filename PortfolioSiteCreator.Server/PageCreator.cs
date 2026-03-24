@@ -1,5 +1,4 @@
-﻿
-namespace PortfolioSiteCreator.Server
+﻿namespace PortfolioSiteCreator.Server
 {
     public enum StylesheetTheme
     {
